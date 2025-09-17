@@ -13,6 +13,7 @@ import Employees from "./pages/Employees";
 import AdminLogin from "./pages/AdminLogin";
 import { useAuth } from "./hooks/useAuth";
 import Calendar from "./components/Calendar";
+import EmployeePerfomance from "./components/EmployeePerfomance";
 // import MyProfile from "./components/MyProfile";
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
                       <Route path="/projects" element={<Projects />} />
                       <Route path="/departments" element={<Departments />} />
                       <Route path="/payroll" element={<Payroll />} />
+                      <Route path="/employee-p" element={<EmployeePerfomance />} />
                       <Route path="/setting" element={<Setting />} />
                       <Route path="/calendar" element={<Calendar />} />
                       {/* <Route path="/my-profile" element={<MyProfile />} /> */}

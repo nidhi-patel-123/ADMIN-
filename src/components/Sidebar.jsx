@@ -3,6 +3,7 @@ import { Link,useLocation } from "react-router-dom";
 import { BiSolidDashboard } from 'react-icons/bi';
 import { ClipboardList } from 'lucide-react';
 import { AiTwotoneCalendar } from 'react-icons/ai';
+import { PiUsersThreeLight } from 'react-icons/pi';
 
 import {
   HomeIcon,
@@ -17,6 +18,7 @@ import {
   PlusIcon,
   ListBulletIcon,
 } from "@heroicons/react/24/outline";
+import { FaUsers, FaUserTie } from "react-icons/fa";
 
 const Sidebar = () => {
   const [openEmployees, setOpenEmployees] = useState(false);
@@ -31,6 +33,7 @@ const Sidebar = () => {
     { name: "Projects", icon: <BriefcaseIcon className="h-8 w-8" />, path: "/projects" },
     { name: "Departments", icon: <BuildingOfficeIcon className="h-8 w-8" />, path: "/departments" },
     { name: "Payroll", icon: <CurrencyDollarIcon className="h-8 w-8" />, path: "/payroll" },
+    { name: "Employee performance", icon: <PiUsersThreeLight className="h-8 w-8" />, path: "/employee-p" },
     { name: "Calendar", icon: <AiTwotoneCalendar className="h-8 w-8" />, path: "/calendar" },
     { name: "Setting", icon: <Cog6ToothIcon className="h-8 w-8" />, path: "/setting" },
   ];
