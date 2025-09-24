@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/DashboardStats";
@@ -14,10 +14,11 @@ import AdminLogin from "./pages/AdminLogin";
 import { useAuth } from "./hooks/useAuth";
 import Calendar from "./components/Calendar";
 import EmployeePerfomance from "./components/EmployeePerfomance";
-// import MyProfile from "./components/MyProfile";
 
 function App() {
   const { isAuthenticated } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For mobile drawer
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // For desktop collapse
 
   // Protected route component
   const ProtectedRoute = ({ children }) => {
@@ -43,14 +44,22 @@ function App() {
           path="/*"
           element={
             <ProtectedRoute>
-              <div className="flex">
+              <div className="flex min-h-screen">
                 {/* Sidebar */}
-                <Sidebar />
+                <Sidebar
+                  isSidebarOpen={isSidebarOpen}
+                  isSidebarCollapsed={isSidebarCollapsed}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                />
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col">
                   {/* Header on top */}
-                  <Header />
+                  <Header
+                    toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                    toggleSidebarCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    isSidebarOpen={isSidebarOpen}
+                  />
 
                   {/* Page Content */}
                   <div className="flex-1 p-6 bg-gray-100">
@@ -65,7 +74,6 @@ function App() {
                       <Route path="/employee-p" element={<EmployeePerfomance />} />
                       <Route path="/setting" element={<Setting />} />
                       <Route path="/calendar" element={<Calendar />} />
-                      {/* <Route path="/my-profile" element={<MyProfile />} /> */}
                     </Routes>
                   </div>
                 </div>
