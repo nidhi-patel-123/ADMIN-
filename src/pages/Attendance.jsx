@@ -12,15 +12,6 @@ function formatTime(value) {
   return value ? new Date(value).toLocaleTimeString() : "—";
 }
 
-function statusBadge(status) {
-  const map = {
-    present: "bg-green-100 text-green-700",
-    working: "bg-blue-100 text-blue-700",
-    absent: "bg-red-100 text-red-700",
-  };
-  return map[status] || "bg-gray-100 text-gray-700";
-}
-
 // Get week start (Monday) and end (Sunday) for a given date
 function getWeekBounds(date) {
   const d = new Date(date);
@@ -34,8 +25,34 @@ function getWeekBounds(date) {
 
 // Format week range for display
 function formatWeekRange(monday, sunday) {
-  const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const formatDate = (date) =>
+    date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   return `${formatDate(monday)} - ${formatDate(sunday)}`;
+}
+
+// Calculate total hours (checkOut - checkIn, excluding breaks)
+function calculateTotalHours(checkIn, checkOut, breakStart, breakEnd) {
+  if (!checkIn || !checkOut) return "—";
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  let totalMs = end - start;
+
+  // Subtract break time if both breakStart and breakEnd exist
+  if (breakStart && breakEnd) {
+    const breakStartTime = new Date(breakStart);
+    const breakEndTime = new Date(breakEnd);
+    const breakDurationMs = breakEndTime - breakStartTime;
+
+    // Ensure break duration is valid and subtract from total time
+    if (breakDurationMs > 0) {
+      totalMs -= breakDurationMs;
+    }
+  }
+
+  if (totalMs <= 0) return "—";
+  const hours = Math.floor(totalMs / (1000 * 60 * 60));
+  const minutes = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
+  return `${hours}h ${minutes}m`;
 }
 
 export default function AttendanceTable() {
@@ -54,7 +71,7 @@ export default function AttendanceTable() {
   // Calculate current week bounds
   const weekBounds = useMemo(() => {
     const today = new Date();
-    today.setDate(today.getDate() + (currentWeek * 7));
+    today.setDate(today.getDate() + currentWeek * 7);
     return getWeekBounds(today);
   }, [currentWeek]);
 
@@ -66,9 +83,12 @@ export default function AttendanceTable() {
   const fetchEmployees = async () => {
     try {
       const token = sessionStorage.getItem("token");
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/employees`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/admin/employees`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setEmployees(res.data);
     } catch (e) {
       console.error(e);
@@ -87,14 +107,17 @@ export default function AttendanceTable() {
 
       // Use week bounds if no custom date range
       if (!from && !to) {
-        params.from = weekBounds.monday.toISOString().split('T')[0];
-        params.to = weekBounds.sunday.toISOString().split('T')[0];
+        params.from = weekBounds.monday.toISOString().split("T")[0];
+        params.to = weekBounds.sunday.toISOString().split("T")[0];
       }
 
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/attendance`, {
-        params,
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/admin/attendance`,
+        {
+          params,
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setRecords(res.data.items || []);
       setTotal(res.data.total || 0);
     } catch (e) {
@@ -104,36 +127,26 @@ export default function AttendanceTable() {
     }
   };
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  useEffect(() => {
-    fetchAttendance();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentWeek, employeeId, weekBounds]);
-
-  const handleFilter = (e) => {
-    e.preventDefault();
-    setCurrentWeek(0); // Reset to current week when filtering
-    fetchAttendance();
-  };
-
   // Load today's attendance and map by employee id
   const fetchToday = async () => {
     try {
       const token = sessionStorage.getItem("token");
       const today = new Date();
       const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
       const dateStr = `${yyyy}-${mm}-${dd}`;
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/attendance`, {
-        params: { from: dateStr, to: dateStr, page: 1, limit: 10000 },
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/admin/attendance`,
+        {
+          params: { from: dateStr, to: dateStr, page: 1, limit: 10000 },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const map = {};
-      (res.data.items || []).forEach((r) => { map[r.employee?._id || r.employee] = r; });
+      (res.data.items || []).forEach((r) => {
+        map[r.employee?._id || r.employee] = r;
+      });
       setTodayMap(map);
     } catch (e) {
       console.error(e);
@@ -141,37 +154,85 @@ export default function AttendanceTable() {
   };
 
   useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  useEffect(() => {
+    fetchAttendance();
+  }, [currentWeek, employeeId, weekBounds]);
+
+  useEffect(() => {
     fetchToday();
   }, [employees.length]);
 
-  const handleAttendanceToggle = async (empId, currentStatus) => {
+  const handleAttendanceToggle = async (
+    empId,
+    currentStatus,
+    isBreakToggle = false
+  ) => {
     try {
       const token = sessionStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
 
-      if (currentStatus === 'absent') {
-        // Check in
-        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/attendance/checkin`,
-          { employeeId: empId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } else if (currentStatus === 'working') {
-        // Check out
-        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/attendance/checkout`,
-          { employeeId: empId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+      if (isBreakToggle) {
+        const record = todayMap[empId];
+        const onBreak = record?.breakStart && !record?.breakEnd;
+        if (!record?.checkIn || record?.checkOut) {
+          alert(
+            "Employee must be checked in and not checked out to toggle break"
+          );
+          return;
+        }
+        if (!onBreak) {
+          // Break in
+          await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/admin/attendance/breakin`,
+            { employeeId: empId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } else {
+          // Break out
+          await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/admin/attendance/breakout`,
+            { employeeId: empId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+      } else {
+        if (currentStatus === "absent") {
+          // Check in
+          await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/admin/attendance/checkin`,
+            { employeeId: empId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } else if (currentStatus === "working") {
+          // Check out
+          await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/admin/attendance/checkout`,
+            { employeeId: empId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
       }
 
       await Promise.all([fetchToday(), fetchAttendance()]);
     } catch (e) {
-      alert(e.response?.data?.message || 'Failed to update attendance');
+      alert(e.response?.data?.message || "Failed to update attendance");
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Employee Attendance</h2>
+    <div className="p-6 bg-gray-100 min-h-screen font-sans space-y-6">
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-3xl font-bold text-[#113a69]">
+            Employee Attendance
+          </h1>
+        </div>
+        <p className="text-gray-600">
+          Monitor, record, and manage employee attendance, check-ins, check-outs, and breaks.
+        </p>
       </div>
 
       {/* Week Navigation */}
@@ -182,7 +243,9 @@ export default function AttendanceTable() {
           </h3>
           <div className="flex gap-2">
             <button
-              onClick={() => setCurrentWeek(prev => Math.max(-totalWeeks + 1, prev - 1))}
+              onClick={() =>
+                setCurrentWeek((prev) => Math.max(-totalWeeks + 1, prev - 1))
+              }
               disabled={currentWeek <= -totalWeeks + 1}
               className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
             >
@@ -190,12 +253,12 @@ export default function AttendanceTable() {
             </button>
             <button
               onClick={() => setCurrentWeek(0)}
-              className="px-3 py-1 bg-[#113a69] text-white rounded hover:bg-[#1b5393] "
+              className="px-3 py-1 bg-[#113a69] text-white rounded hover:bg-[#1b5393]"
             >
               Current Week
             </button>
             <button
-              onClick={() => setCurrentWeek(prev => Math.min(0, prev + 1))}
+              onClick={() => setCurrentWeek((prev) => Math.min(0, prev + 1))}
               disabled={currentWeek >= 0}
               className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
             >
@@ -205,135 +268,72 @@ export default function AttendanceTable() {
         </div>
       </div>
 
-      {/* Today's Attendance - Quick Actions */}
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <div className="px-4 pt-4 pb-2 text-sm text-gray-700 font-medium">Today's Attendance - Quick Actions</div>
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-gray-50 text-left text-sm text-gray-700">
-              <th className="px-4 py-3 border-b">Name</th>
-              <th className="px-4 py-3 border-b">Check In</th>
-              <th className="px-4 py-3 border-b">Check Out</th>
-              <th className="px-4 py-3 border-b">Working Hours</th>
-              <th className="px-4 py-3 border-b">Status</th>
-              <th className="px-4 py-3 border-b">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-500">No employees found</td>
-              </tr>
-            ) : (
-              employees.map((emp) => {
-                const rec = todayMap[emp._id] || {};
-                const status = rec.status || 'absent';
-                return (
-                  <tr key={emp._id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b">{emp.name}</td>
-                    <td className="px-4 py-3 border-b">{formatTime(rec.checkIn)}</td>
-                    <td className="px-4 py-3 border-b">{formatTime(rec.checkOut)}</td>
-                    <td className="px-4 py-3 border-b">{formatMinutes(rec.workingMinutes)}</td>
-                    <td className="px-4 py-3 border-b">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${statusBadge(status)}`}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 border-b">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={status === 'working'}
-                          onChange={() => handleAttendanceToggle(emp._id, status)}
-                          disabled={status === 'present'}
-                          className="sr-only peer"
-                        />
-                        <div className={`relative w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer transition-all ${
-                          status === 'present'
-                            ? 'bg-green-600 cursor-not-allowed'
-                            : status === 'working'
-                            ? 'bg-[#113a69]'
-                            : 'bg-gray-200'
-                        } ${status === 'present' ? '' : 'peer-checked:after:translate-x-full'} peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all`}>
-                        </div>
-                        <span className={`ml-3 text-sm font-medium ${
-                          status === 'present' ? 'text-green-600' : 'text-gray-900'
-                        }`}>
-                          {status === 'absent' ? 'Check In' : status === 'working' ? 'Check Out' : 'Present'}
-                        </span>
-                      </label>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-      {/* Custom Date Range Filter */}
-      <form onSubmit={handleFilter} className="bg-white p-4 rounded-lg shadow space-y-3 md:space-y-0 md:flex md:items-end md:gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">From</label>
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1 w-full border rounded px-3 py-2" />
-        </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">To</label>
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 w-full border rounded px-3 py-2" />
-        </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">Employee</label>
-          <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className="mt-1 w-full border rounded px-3 py-2">
-            <option value="">All</option>
-            {employees.map((emp) => (
-              <option key={emp._id} value={emp._id}>{emp.name}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <button type="submit" className="w-full md:w-auto px-4 py-2 bg-[#113a69] text-white rounded hover:bg-[#1b5393]">Apply</button>
-        </div>
-      </form>
       {/* Weekly Attendance Records */}
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <div className="px-4 pt-4 pb-2 text-sm text-gray-700 font-medium">
-          Weekly Attendance Records ({formatWeekRange(weekBounds.monday, weekBounds.sunday)})
+          Weekly Attendance Records (
+          {formatWeekRange(weekBounds.monday, weekBounds.sunday)})
         </div>
         <table className="min-w-full">
           <thead>
             <tr className="bg-gray-50 text-left text-sm text-gray-700">
-              <th className="px-4 py-3 border-b">Date</th>
               <th className="px-4 py-3 border-b">Name</th>
+              <th className="px-4 py-3 border-b">Date</th>
               <th className="px-4 py-3 border-b">Check In</th>
               <th className="px-4 py-3 border-b">Check Out</th>
-              <th className="px-4 py-3 border-b">Working Hours</th>
-              <th className="px-4 py-3 border-b">Status</th>
+              <th className="px-4 py-3 border-b">Break In</th>
+              <th className="px-4 py-3 border-b">Break Out</th>
+              <th className="px-4 py-3 border-b">Total Hours</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-500">Loading...</td>
+                <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                  Loading...
+                </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-red-600">{error}</td>
+                <td colSpan={7} className="px-4 py-6 text-center text-red-600">
+                  {error}
+                </td>
               </tr>
             ) : records.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-500">No attendance found for this week</td>
+                <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                  No attendance found for this week
+                </td>
               </tr>
             ) : (
               records.map((r) => (
                 <tr key={r._id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b">{new Date(r.attendanceDate).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 border-b">{r.employee?.name || "—"}</td>
-                  <td className="px-4 py-3 border-b">{formatTime(r.checkIn)}</td>
-                  <td className="px-4 py-3 border-b">{formatTime(r.checkOut)}</td>
-                  <td className="px-4 py-3 border-b">{formatMinutes(r.workingMinutes)}</td>
+                   <td className="px-4 py-3 border-b font-bold">
+                    {r.employee?.name || "—"}
+                  </td>
                   <td className="px-4 py-3 border-b">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${statusBadge(r.status)}`}>
-                      {r.status ? r.status.charAt(0).toUpperCase() + r.status.slice(1) : "—"}
-                    </span>
+                    {new Date(r.attendanceDate).toLocaleDateString()}
+                  </td>
+                 
+                  <td className="px-4 py-3 border-b">
+                    {formatTime(r.checkIn)}
+                  </td>
+                  <td className="px-4 py-3 border-b">
+                    {formatTime(r.checkOut)}
+                  </td>
+                  <td className="px-4 py-3 border-b">
+                    {formatTime(r.breakStart)}
+                  </td>
+                  <td className="px-4 py-3 border-b">
+                    {formatTime(r.breakEnd)}
+                  </td>
+                  <td className="px-4 py-3 border-b">
+                    {calculateTotalHours(
+                      r.checkIn,
+                      r.checkOut,
+                      r.breakStart,
+                      r.breakEnd
+                    )}
                   </td>
                 </tr>
               ))

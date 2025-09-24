@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { UserIcon, LockClosedIcon, BellIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth.js';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Loader component matching existing loader style
 const Loader = () => (
@@ -123,6 +125,15 @@ const SettingsPage = () => {
         email: response.data.admin.email || prev.email,
       }));
       setSuccess('Profile updated successfully');
+      toast.success('Email updated successfully!', {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
       setEmailChanged(false);
     } catch (err) {
       setError(
@@ -157,11 +168,6 @@ const SettingsPage = () => {
       setLoading(false);
       return;
     }
-    // if (passwords.newPassword.length < 8) {
-    //   setError('New password must be at least 8 characters');
-    //   setLoading(false);
-    //   return;
-    // }
     if (passwords.currentPassword === passwords.newPassword) {
       setError('New password must be different from current password');
       setLoading(false);
@@ -177,6 +183,15 @@ const SettingsPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSuccess('Password updated successfully');
+      toast.success('Password updated successfully!', {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
       setError(
@@ -205,6 +220,15 @@ const SettingsPage = () => {
       );
       setSettings((prev) => ({ ...prev, notifications: newNotifications }));
       setSuccess('Notification settings updated successfully');
+      toast.success('Notification settings updated successfully!', {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
     } catch (err) {
       setError(
         err?.response?.data?.message ||
@@ -367,7 +391,6 @@ const SettingsPage = () => {
                     className="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border-gray-300"
                     disabled={loading}
                     required
-                    // minLength={8}
                     autoComplete="current-password"
                     aria-label="Current Password"
                   />
@@ -400,7 +423,6 @@ const SettingsPage = () => {
                     className="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border-gray-300"
                     disabled={loading}
                     required
-                    // minLength={8}
                     autoComplete="new-password"
                     aria-label="New Password"
                   />
@@ -433,7 +455,6 @@ const SettingsPage = () => {
                     className="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border-gray-300"
                     disabled={loading}
                     required
-                    // minLength={8}
                     autoComplete="new-password"
                     aria-label="Confirm New Password"
                   />
@@ -494,6 +515,7 @@ const SettingsPage = () => {
           )}
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

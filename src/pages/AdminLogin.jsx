@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserIcon, LockClosedIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { UserIcon, LockClosedIcon, UsersIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,11 +21,19 @@ const AdminLogin = () => {
     // Validations
     if (!email) {
       setError("Email field cannot be empty");
+      toast.error("Please enter a valid email or password", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       setLoading(false);
       return;
     }
     if (!password) {
       setError("Password field cannot be empty");
+      toast.error("Please enter a valid email or password", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       setLoading(false);
       return;
     }
@@ -40,14 +51,28 @@ const AdminLogin = () => {
       // Notify app about auth change (same-tab)
       window.dispatchEvent(new Event("auth-changed"));
 
+      // Show success toast
+      toast.success("Login successful!", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+
       // Redirect to dashboard
       navigate("/");
     } catch (err) {
       setLoading(false);
       if (err.response) {
         setError(err.response.data.message || "Login failed. Please try again.");
+        toast.error("Please enter a valid email or password", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       } else {
         setError("Server error. Please try again later.");
+        toast.error("Server error. Please try again later.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
     }
   };
@@ -104,13 +129,28 @@ const AdminLogin = () => {
             <div className="relative">
               <LockClosedIcon className="w-5 h-5 absolute left-3 top-3 text-[#113a69]" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#113a69]"
+                className="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#113a69]"
                 disabled={loading}
+                autoComplete="current-password"
               />
+              <button
+                type="button"
+                tabIndex={-1}
+                className="absolute right-3 top-2.5 text-[#113a69] focus:outline-none"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                disabled={loading}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
             </div>
 
             {/* Button */}
@@ -123,7 +163,6 @@ const AdminLogin = () => {
                 <span>Loading...</span>
               ) : (
                 <>
-                  {/* <span>➡</span> */}
                   <span>Login to Admin Dashboard</span>
                 </>
               )}
@@ -131,6 +170,7 @@ const AdminLogin = () => {
           </form>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

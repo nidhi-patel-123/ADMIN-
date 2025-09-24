@@ -1,5 +1,14 @@
+/* Import Inter font from Google */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
+/* Apply Inter globally */
+@layer base {
+  html {
+    font-family: 'Inter', sans-serif;
+  }
+}

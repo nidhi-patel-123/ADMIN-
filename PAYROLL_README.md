@@ -5,12 +5,14 @@ A comprehensive payroll management system built with React frontend and Node.js 
 ## Features
 
 ### 🎯 Core Functionality
+
 - **Employee Payroll Management**: Create, edit, and delete individual payroll records
 - **Bulk Payroll Creation**: Generate payrolls for all active employees at once
 - **Payment Processing**: Mark payrolls as paid, pending, or cancelled
 - **Comprehensive Calculations**: Automatic calculation of gross salary, net salary, and totals
 
 ### 💰 Salary Components
+
 - **Basic Salary**: Core employee salary (stored in Employee model and auto-filled in payroll)
 - **Allowances**: House rent, medical, transport, food, and other allowances
 - **Deductions**: Tax, insurance, loan, and other deductions
@@ -18,12 +20,14 @@ A comprehensive payroll management system built with React frontend and Node.js 
 - **Bonus**: Additional bonus amounts
 
 ### 📊 Dashboard & Analytics
+
 - **Real-time Statistics**: Total payrolls, net salaries, pending/paid payments
 - **Filtering & Search**: Filter by month, year, payment status, and employee
 - **Pagination**: Efficient data browsing with configurable page sizes
 - **Sorting**: Sort by various fields in ascending/descending order
 
 ### 🔐 Security & Access Control
+
 - **Admin Authentication**: JWT-based authentication system
 - **Protected Routes**: All payroll operations require admin privileges
 - **Data Validation**: Comprehensive input validation and error handling
@@ -31,11 +35,13 @@ A comprehensive payroll management system built with React frontend and Node.js 
 ## Backend API Endpoints
 
 ### Employee Management
+
 - `POST /admin/employees` - Create new employee (now includes basic salary)
 - `PUT /admin/employees/:id` - Update existing employee (now includes basic salary)
 - `GET /admin/employees` - Get all employees (now includes basic salary)
 
 ### Payroll Management
+
 - `GET /admin/payrolls` - Get all payrolls with pagination and filtering
 - `POST /admin/payrolls` - Create new payroll (auto-uses employee basic salary if not provided)
 - `PUT /admin/payrolls/:id` - Update existing payroll
@@ -43,18 +49,22 @@ A comprehensive payroll management system built with React frontend and Node.js 
 - `GET /admin/payrolls/:id` - Get payroll by ID
 
 ### Bulk Operations
+
 - `POST /admin/payrolls/bulk` - Create payrolls for all active employees
 
 ### Payment Processing
+
 - `PATCH /admin/payrolls/:id/payment` - Process payment status
 
 ### Analytics & Reports
+
 - `GET /admin/payrolls/stats` - Get payroll statistics and summaries
 - `GET /admin/payrolls/employee/:employeeId/history` - Get employee payroll history
 
 ## Database Schema
 
 ### Employee Model
+
 ```javascript
 {
   // ... existing fields ...
@@ -69,6 +79,7 @@ A comprehensive payroll management system built with React frontend and Node.js 
 ```
 
 ### Payroll Model
+
 ```javascript
 {
   employee: ObjectId,           // Reference to Employee
@@ -111,12 +122,14 @@ A comprehensive payroll management system built with React frontend and Node.js 
 ## Employee-Basic Salary Integration
 
 ### Employee Model Updates
+
 - **Basic Salary Field**: Added `basicSalary` field to Employee model (required, min: 0)
 - **Employee Forms**: Updated both add and edit forms to include basic salary input
 - **Employee List**: Added Basic Salary column to employee table display
 - **Export Functionality**: Basic salary included in CSV export
 
 ### Payroll Integration
+
 - **Auto-fill**: Basic salary automatically populates when employee is selected in payroll form
 - **Fallback Logic**: If no basic salary provided in payroll, system uses employee's stored basic salary
 - **Bulk Creation**: Bulk payroll creation uses employee's basic salary as base value
@@ -125,12 +138,14 @@ A comprehensive payroll management system built with React frontend and Node.js 
 ## Frontend Components
 
 ### Main Payroll Page (`/src/pages/Payroll.jsx`)
+
 - **Statistics Cards**: Overview of payroll metrics
 - **Action Bar**: Search, filters, and action buttons
 - **Data Table**: Comprehensive payroll listing with actions
 - **Modals**: Add/Edit payroll, payment processing, bulk creation
 
 ### Key Features
+
 - **Responsive Design**: Mobile-friendly interface
 - **Real-time Updates**: Automatic data refresh after operations
 - **Form Validation**: Client-side validation with error messages
@@ -140,6 +155,7 @@ A comprehensive payroll management system built with React frontend and Node.js 
 ## Usage Instructions
 
 ### 1. Setting Employee Basic Salary
+
 1. Go to Employees section
 2. Click "Add Employee" or edit existing employee
 3. Fill in the Basic Salary field (required)
@@ -147,6 +163,7 @@ A comprehensive payroll management system built with React frontend and Node.js 
 5. Basic salary is now stored and will auto-fill in payroll forms
 
 ### 2. Creating Individual Payroll
+
 1. Click "Add Payroll" button
 2. Select employee from dropdown (basic salary auto-fills)
 3. Modify basic salary if needed (optional)
@@ -157,23 +174,27 @@ A comprehensive payroll management system built with React frontend and Node.js 
 8. Click "Create Payroll"
 
 ### 2. Bulk Payroll Creation
+
 1. Click "Bulk Create" button
 2. Select month and year
 3. System automatically creates payrolls for all active employees
 4. Review results and any errors
 
 ### 3. Processing Payments
+
 1. Click payment icon (💰) on any payroll row
 2. Select payment status (pending/paid/cancelled)
 3. Choose payment method
 4. Click "Process Payment"
 
 ### 4. Editing Payroll
+
 1. Click edit icon (✏️) on any payroll row
 2. Modify required fields
 3. Click "Update Payroll"
 
 ### 5. Filtering & Search
+
 - **Search**: Use search bar to find specific payrolls
 - **Month Filter**: Filter by specific month
 - **Year Filter**: Filter by specific year
@@ -182,6 +203,7 @@ A comprehensive payroll management system built with React frontend and Node.js 
 ## Environment Variables
 
 ### Backend (`.env`)
+
 ```env
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
@@ -189,13 +211,15 @@ PORT=3000
 ```
 
 ### Frontend (`.env`)
+
 ```env
-REACT_APP_BACKEND_URL=http://localhost:3000
+REACT_APP_BACKEND_URL=https://backend-6bli.onrender.com
 ```
 
 ## Installation & Setup
 
 ### Backend Setup
+
 ```bash
 cd my-dashboard-backend
 npm install
@@ -203,6 +227,7 @@ npm start
 ```
 
 ### Frontend Setup
+
 ```bash
 cd my-dashboard-main
 npm install
@@ -212,6 +237,7 @@ npm start
 ## Dependencies
 
 ### Backend
+
 - Express.js
 - MongoDB with Mongoose
 - JWT for authentication
@@ -219,6 +245,7 @@ npm start
 - CORS for cross-origin requests
 
 ### Frontend
+
 - React 18
 - React Router for navigation
 - Axios for API calls

@@ -24,9 +24,12 @@ const Employees = () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem("token");
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/departments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/admin/departments`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setDepartments(response.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch departments");
@@ -40,9 +43,12 @@ const Employees = () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem("token");
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/employees`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/admin/employees`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setEmployees(response.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch employees");
@@ -58,9 +64,12 @@ const Employees = () => {
       setError("");
       try {
         const token = sessionStorage.getItem("token");
-        await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/admin/employees/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.delete(
+          `${process.env.REACT_APP_BACKEND_URL}/admin/employees/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         fetchEmployees();
       } catch (err) {
         setError(err.response?.data?.message || "Delete failed");
@@ -73,7 +82,18 @@ const Employees = () => {
 
   const handleExport = () => {
     const csv = [
-      ["Employee", "Department", "Role", "Basic Salary", "Mobile", "Email", "Gender", "Status", "Address", "Join Date"],
+      [
+        "Employee",
+        "Department",
+        "Role",
+        "Basic Salary",
+        "Mobile",
+        "Email",
+        "Gender",
+        "Status",
+        "Address",
+        "Join Date",
+      ],
       ...employees.map((emp) => [
         emp.name,
         emp.department.name,
@@ -87,7 +107,7 @@ const Employees = () => {
         new Date(emp.joiningDate).toLocaleDateString(),
       ]),
     ]
-      .map((e) => e.map(cell => `"${cell}"`).join(",")) // Wrap cells in quotes to handle commas
+      .map((e) => e.map((cell) => `"${cell}"`).join(",")) // Wrap cells in quotes to handle commas
       .join("\n");
 
     const blob = new Blob([csv], { type: "text/csv" });
@@ -101,14 +121,14 @@ const Employees = () => {
     setEditEmployee({
       ...emp,
       department: emp.department._id,
-      joiningDate: new Date(emp.joiningDate).toISOString().split('T')[0],
+      joiningDate: new Date(emp.joiningDate).toISOString().split("T")[0],
     });
     setShowModal(true);
   };
 
   const handleSave = async () => {
     for (let key in editEmployee) {
-      if (key !== 'password' && !editEmployee[key]) {
+      if (key !== "password" && !editEmployee[key]) {
         setError(`${key.charAt(0).toUpperCase() + key.slice(1)} is required`);
         return;
       }
@@ -139,33 +159,48 @@ const Employees = () => {
   const filteredEmployees = employees.filter((emp) => {
     return (
       emp.name.toLowerCase().includes(search.toLowerCase()) &&
-      (departmentFilter === "All" || emp.department.name === departmentFilter) &&
+      (departmentFilter === "All" ||
+        emp.department.name === departmentFilter) &&
       (statusFilter === "All" || emp.status === statusFilter)
     );
   });
 
   return (
-    <div className="p-6 bg-white shadow rounded-lg">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-800">Employee Directory</h2>
-        <div className="flex gap-3">
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-            disabled={loading}
-          >
-            <Download size={18} /> Export CSV
-          </button>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 bg-[#113a69] text-white px-4 py-2 rounded-lg hover:bg-[#1b5393] transition-colors"
-            disabled={loading}
-          >
-            <Plus size={18} /> {showAddForm ? "Close Form" : "Add Employee"}
-          </button>
-        </div>
-      </div>
+    // <div className="p-6 bg-white shadow rounded-lg">
+    //   <div className="flex justify-between items-center mb-6">
+    //     <h2 className="text-xl font-semibold text-gray-800">Employee Directory</h2>
+    //     <div className="flex gap-3">
 
+    //       <button
+    //         onClick={() => setShowAddForm(!showAddForm)}
+    //         className="flex items-center gap-2 bg-[#113a69] text-white px-4 py-2 rounded-lg hover:bg-[#1b5393] transition-colors"
+    //         disabled={loading}
+    //       >
+    //         <Plus size={18} /> {showAddForm ? "Close Form" : "Add Employee"}
+    //       </button>
+    //     </div>
+    //   </div>
+    <div className="p-6 bg-gray-100 font-sans">
+      <div className="flex justify-between items-center mb-8">
+        <div className="">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold text-[#113a69]">
+              Employee Directory
+            </h1>
+          </div>
+          <p className="text-gray-600">
+            View, search, and manage all employees. Filter by department or
+            status, and add or edit employee details.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="flex items-center gap-2 bg-[#113a69] text-white px-4 py-2 rounded-lg hover:bg-[#1b5393] transition-colors"
+          disabled={loading}
+        >
+          <Plus size={18} /> {showAddForm ? "Close Form" : "Add Employee"}
+        </button>
+      </div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {showAddForm && (
@@ -213,16 +248,36 @@ const Employees = () => {
         <table className="min-w-full border border-gray-200 bg-white rounded-lg shadow-sm">
           <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Employee</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Department</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Role</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Basic Salary</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Mobile</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Email</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Gender</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Status</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Joining Date</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700 border-b">Actions</th>
+              <th className="p-3 text-left text-sm text-gray-700 border-b font-bold">
+                Employee
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Department
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Role
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Basic Salary
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Mobile
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Email
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Gender
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Status
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Joining Date
+              </th>
+              <th className="p-3 text-left text-sm font-bold text-gray-700 border-b">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -242,30 +297,41 @@ const Employees = () => {
               filteredEmployees.map((emp, index) => (
                 <tr
                   key={emp._id}
-                  className={`border-b hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                  className={`border-b hover:bg-gray-50 ${
+                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                  }`}
                 >
-                  <td className="p-3 text-gray-800">{emp.name}</td>
+                  <td className="p-3 text-gray-800 font-bold">{emp.name}</td>
                   <td className="p-3 text-gray-800">{emp.department.name}</td>
                   <td className="p-3 text-gray-800">{emp.role}</td>
-                  <td className="p-3 text-gray-800">₹{emp.basicSalary?.toLocaleString() || '0'}</td>
+                  <td className="p-3 text-gray-800">
+                    ₹{emp.basicSalary?.toLocaleString() || "0"}
+                  </td>
                   <td className="p-3 text-gray-800">{emp.mobile}</td>
-                  <td className="p-3 text-gray-800 max-w-[200px] truncate" title={emp.email}>
+                  <td
+                    className="p-3 text-gray-800 max-w-[200px] truncate"
+                    title={emp.email}
+                  >
                     {emp.email}
                   </td>
                   <td className="p-3 text-gray-800">{emp.gender}</td>
                   <td className="p-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${emp.status === "active"
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        emp.status === "active"
                           ? "bg-green-100 text-green-700"
                           : emp.status === "on leave"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
                     >
                       {emp.status}
                     </span>
                   </td>
-                  <td className="p-3 text-gray-800 max-w-[200px] truncate" title={emp.joiningDate}>
+                  <td
+                    className="p-3 text-gray-800 max-w-[200px] truncate"
+                    title={emp.joiningDate}
+                  >
                     {new Date(emp.joiningDate).toLocaleDateString()}
                   </td>
                   <td className="p-3">
@@ -307,7 +373,9 @@ const Employees = () => {
                 <input
                   type="text"
                   value={editEmployee.name}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({ ...editEmployee, name: e.target.value })
+                  }
                   placeholder="Enter The Name..."
                   className="w-full border p-2 rounded"
                   required
@@ -319,7 +387,9 @@ const Employees = () => {
                 <input
                   type="text"
                   value={editEmployee.role}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, role: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({ ...editEmployee, role: e.target.value })
+                  }
                   placeholder="Enter The Role..."
                   className="w-full border p-2 rounded"
                   required
@@ -330,8 +400,13 @@ const Employees = () => {
                 <label className="block mb-1 font-medium">Basic Salary*</label>
                 <input
                   type="number"
-                  value={editEmployee.basicSalary || ''}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, basicSalary: parseFloat(e.target.value) || 0 })}
+                  value={editEmployee.basicSalary || ""}
+                  onChange={(e) =>
+                    setEditEmployee({
+                      ...editEmployee,
+                      basicSalary: parseFloat(e.target.value) || 0,
+                    })
+                  }
                   placeholder="Enter Basic Salary..."
                   className="w-full border p-2 rounded"
                   required
@@ -344,7 +419,12 @@ const Employees = () => {
                 <label className="block mb-1 font-medium">Department*</label>
                 <select
                   value={editEmployee.department}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, department: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({
+                      ...editEmployee,
+                      department: e.target.value,
+                    })
+                  }
                   className="w-full border p-2 rounded"
                   required
                   disabled={loading || departments.length === 0}
@@ -365,7 +445,9 @@ const Employees = () => {
                 <input
                   type="text"
                   value={editEmployee.mobile}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, mobile: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({ ...editEmployee, mobile: e.target.value })
+                  }
                   placeholder="Enter The Mobile..."
                   className="w-full border p-2 rounded"
                   required
@@ -377,7 +459,12 @@ const Employees = () => {
                 <input
                   type="date"
                   value={editEmployee.joiningDate}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, joiningDate: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({
+                      ...editEmployee,
+                      joiningDate: e.target.value,
+                    })
+                  }
                   className="w-full border p-2 rounded"
                   required
                   disabled={loading}
@@ -388,7 +475,9 @@ const Employees = () => {
                 <input
                   type="email"
                   value={editEmployee.email}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, email: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({ ...editEmployee, email: e.target.value })
+                  }
                   placeholder="Enter The Email..."
                   className="w-full border p-2 rounded"
                   required
@@ -399,7 +488,9 @@ const Employees = () => {
                 <label className="block mb-1 font-medium">Gender*</label>
                 <select
                   value={editEmployee.gender}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, gender: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({ ...editEmployee, gender: e.target.value })
+                  }
                   className="w-full border p-2 rounded"
                   required
                   disabled={loading}
@@ -411,10 +502,14 @@ const Employees = () => {
                 </select>
               </div>
               <div>
-                <label className="block mb-1 font-medium">Employee Status*</label>
+                <label className="block mb-1 font-medium">
+                  Employee Status*
+                </label>
                 <select
                   value={editEmployee.status}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, status: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({ ...editEmployee, status: e.target.value })
+                  }
                   className="w-full border p-2 rounded"
                   required
                   disabled={loading}
@@ -429,7 +524,12 @@ const Employees = () => {
                 <label className="block mb-1 font-medium">Password</label>
                 <input
                   type="password"
-                  onChange={(e) => setEditEmployee({ ...editEmployee, password: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({
+                      ...editEmployee,
+                      password: e.target.value,
+                    })
+                  }
                   placeholder="********"
                   className="w-full border p-2 rounded"
                   disabled={loading}
@@ -440,7 +540,12 @@ const Employees = () => {
                 <input
                   type="text"
                   value={editEmployee.address}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, address: e.target.value })}
+                  onChange={(e) =>
+                    setEditEmployee({
+                      ...editEmployee,
+                      address: e.target.value,
+                    })
+                  }
                   placeholder="Enter The Address..."
                   className="w-full border p-2 rounded"
                   required
