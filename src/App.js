@@ -14,6 +14,7 @@ import AdminLogin from "./pages/AdminLogin";
 import { useAuth } from "./hooks/useAuth";
 import Calendar from "./components/Calendar";
 import EmployeePerfomance from "./components/EmployeePerfomance";
+import ChatLayout from "./pages/Chat";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -74,6 +75,7 @@ function App() {
                       <Route path="/employee-p" element={<EmployeePerfomance />} />
                       <Route path="/setting" element={<Setting />} />
                       <Route path="/calendar" element={<Calendar />} />
+                      <Route path="/chat" element={<ChatLayout/>} />
                     </Routes>
                   </div>
                 </div>

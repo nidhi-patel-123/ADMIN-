@@ -4,6 +4,7 @@ import { BiSolidDashboard } from 'react-icons/bi';
 import { ClipboardList } from 'lucide-react';
 import { AiTwotoneCalendar } from 'react-icons/ai';
 import { PiUsersThreeLight } from 'react-icons/pi';
+import { PiChatsBold } from "react-icons/pi";
 import {
   HomeIcon,
   UserGroupIcon,
@@ -30,6 +31,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarCollapsed, setIsSidebarOpen }) => {
     { name: "Departments", icon: <BuildingOfficeIcon className="h-8 w-8" />, path: "/departments" },
     { name: "Payroll", icon: <CurrencyDollarIcon className="h-8 w-8" />, path: "/payroll" },
     { name: "Employee performance", icon: <PiUsersThreeLight className="h-8 w-8" />, path: "/employee-p" },
+    { name: "Chat", icon: <PiChatsBold className="h-7 w-7" />, path: "/chat" },
     { name: "Setting", icon: <Cog6ToothIcon className="h-8 w-8" />, path: "/setting" },
   ];
 
